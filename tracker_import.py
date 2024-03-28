@@ -18,6 +18,10 @@ TRACKER_HEADERS = {
 }
 
 TRACKER_INITIAL_HISTORY_DEPTH = os.environ.get('TRACKER_INITIAL_HISTORY_DEPTH')
+if os.environ.get('FILTER'):
+    FILTER = os.environ.get('FILTER')
+else:
+    FILTER = ''
 
 # ClickHouse params
 CH_URL = f'https://{os.environ["CH_HOST"]}:8443/?database={os.environ["CH_DB"]}'
@@ -126,13 +130,13 @@ def get_issues_query_text():
     if latest_record_time > min_dt:
         # subtract 5 minutes to handle possible time overlapping & late updates
         start_time = datetime_to_str(latest_record_time - timedelta(minutes=5))
-        tracker_query_text = 'updated: > "' + start_time + '"'
+        tracker_query_text = 'updated: > "' + start_time + '" ' + FILTER
         return tracker_query_text
     elif TRACKER_INITIAL_HISTORY_DEPTH:
         tracker_query_text = 'updated: >now()-' + TRACKER_INITIAL_HISTORY_DEPTH
         return tracker_query_text
     else:
-        return 'updated: >now() - 1y'
+        return 'updated: >now() - 1y ' + FILTER
 
 
 def get_tracker_issues(query_text):
